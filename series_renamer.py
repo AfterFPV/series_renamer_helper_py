@@ -6,29 +6,23 @@ from os import path
 import pandas as pd
 import wikipedia as wp
 import re
+import urllib.request
 
 
 
-def get_args():
-    series_name = input("Series Name:" )
-    season_num = input("Season Number: ")
-    series_path = input("Series Path: ")
-    series_ext = input("Series File Extension: ")
-    series_url = input("Wikipedia URL: ")
+class MySeries:
+    def __init__(self, name='', url=''):
+        self.series_name = name
+        self.series_url = url
 
-    print()
+    def get_data(self):
+        print(f'{self.series_name}+{self.series_url}j')
 
-    return series_name, season_num, series_path, series_ext, series_url
+    def generate_url(self):
+        self.series_url = self.series_name.replace(" ", "")
+        self.series_url = self.series_url.replace("The", "")
+        self.series_url = "http://epguides.com/" + self.series_url
 
-
-def test_args():
-    series_name = "Squid Game"
-    season_num = 1
-    series_path = "./Squid.Game.S01.DUBBED.WEBRip.x265-ION265"
-    series_ext = "mp4"
-    series_url = "Squid_Game#Episodes"
-
-    return series_name, season_num, series_path, series_ext, series_url
 
 
 def scrape_wikipedia(series_url):
@@ -54,28 +48,53 @@ def scrape_wikipedia(series_url):
 
 
 def main():
+
     print("Welcome to the TV Series Batch Renamer")
+    print("")
+    print("    * this script generates txt files of episode names associated with S01E01")
+    print("    * these output files are for use by the c script as a lookup table of episode names")
+    print("")
+    print("")
 
-    #setup
-    #series_name, season_num, series_path, series_ext, series_url = get_args()
-    series_name, season_num, series_path, series_ext, series_url = test_args()
+    
+    series_dir = os.path.join('e:\\', r"User - Consolidated", 'Videos', 'Series')
+    print("Scanning:", series_dir)
 
-    #get table from wikipedia
+    if not path.exists(series_dir):
+        sys.exit("Series Path INVALID")
+
+
+    series_list = [] 
+
+    files = os.listdir(series_dir)
+    for file in files:
+        series_list.append(MySeries(file,''))
+        #print(file)
+
+    for obj in series_list:
+        obj.generate_url()
+        #print(obj.series_name)
+
+        try:
+            page = urllib.request.urlopen(obj.series_url)
+            content = page.read().decode('utf-8')
+            links = re.findall('exportToCSVmaze.asp\?maze=[0-9]*', content)
+            for link in links:
+                print("curl https://epguides.com/common/" + link + " > \"" + obj.series_name + ".txt\"")
+
+
+        
+        except urllib.error.URLError as e:
+            print("#" + e.reason)
+
+
+    
+    sys.exit()
+
+
     episode_names = scrape_wikipedia(series_url)
     for name in episode_names:
         print(name)
-
-    #find local series files
-    if not path.exists(series_path):
-        sys.exit("Series Path INVALID")
-
-    files = os.listdir(series_path)
-    #for file in files:
-     #   if os.path.isfile(os.path.join(series_path, file)):
-            #print(file)
-
-    #print(series_name)
-    #print(series_url)
 
 
 
