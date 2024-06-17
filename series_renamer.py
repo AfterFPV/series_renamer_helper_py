@@ -57,7 +57,7 @@ def main():
     print("")
 
     
-    series_dir = os.path.join('e:\\', r"User - Consolidated", 'Videos', 'Series')
+    series_dir = os.path.join('d:\\', r"s2mccaffr", 'Videos', 'Series')
     print("Scanning:", series_dir)
 
     if not path.exists(series_dir):
@@ -85,7 +85,7 @@ def main():
 
         
         except urllib.error.URLError as e:
-            print("#" + e.reason)
+            print("# " +  e.reason + " - " + obj.series_name)
 
 
     
